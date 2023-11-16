@@ -1,25 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from "react"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { Home, Login } from "./pages"
+import { Nav, ProtectedRoute } from "./components"
+import "./App.css"
+import { useSelector } from "react-redux"
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+  const { user } = useSelector(
+    (state) => state.auth
   );
+
+  return (
+    <BrowserRouter>
+      <Nav />
+      <Routes>
+        <Route index element={<Login />} />
+        <Route path='/login' element={<Login />} />
+        <Route
+          path='/home'
+          element={
+            <ProtectedRoute isAllowed={user} redirectTo='/login'>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App
