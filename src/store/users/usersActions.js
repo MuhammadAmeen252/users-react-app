@@ -4,18 +4,25 @@ import {
   setError,
   setLoading,
   setData,
-  resetErrors
+  resetErrors,
+  setPage
 } from "./usersSlice";
 
 
-export const getUsersData = (payload, action) => async (dispatch) => {
+export const getUsersData = (payload, action) => async (dispatch, getState) => {
   dispatch(setLoading(true));
+  const {page=0, limit=20} = payload;
+  const { data: existingData } = getState().users;
   axiosInstance
-    .get("/admin/users", payload)
+    .get(`/admin/users?page=${page}&limit=${limit}`)
     .then((res) => {
       action && action(res?.data?.data);
+      const newData = {
+        ...res.data.data,
+        data: page === 0 ? res.data.data.data : [...existingData.data , ...res.data.data.data],
+      };
+      dispatch(setData(newData));
       dispatch(setLoading(false));
-      dispatch(setData(res?.data?.data));
     })
     .catch((err) => {
       dispatch(setError(err?.error?.message));
@@ -32,7 +39,9 @@ export const addUser = (payload, action) => async (dispatch) => {
     .then((res) => {
       action && action(res?.data?.data);
       dispatch(setLoading(false));
-      dispatch(getUsersData());
+      //Here better approach is to update the redux state instead of loading the complete data from API
+      //But for now I am using this but in most projects I prefer rather updating redux state
+      dispatch(getUsersData({}));
     })
     .catch((err) => {
       dispatch(setError(err?.error?.message));
@@ -48,7 +57,9 @@ export const updateUser = (userId, payload, action) => async (dispatch) => {
     .then((res) => {
       action && action(res?.data?.data);
       dispatch(setLoading(false));
-      dispatch(getUsersData());
+      //Here better approach is to update the redux state instead of loading the complete data from API
+      //But for now I am using this but in most projects I prefer rather updating redux state
+      dispatch(getUsersData({}));
     })
     .catch((err) => {
       dispatch(setError(err?.error?.message));
@@ -64,7 +75,6 @@ export const getUser = (userId,payload, action) => async (dispatch) => {
     .then((res) => {
       action && action(res?.data?.data);
       dispatch(setLoading(false));
-      dispatch(getUsersData());
     })
     .catch((err) => {
       dispatch(setError(err?.error?.message));
@@ -79,7 +89,9 @@ export const deleteUser = (userId) => async (dispatch) => {
     .delete(`/admin/user/${userId}`)
     .then(() => {
       dispatch(setLoading(false));
-      dispatch(getUsersData()); // Refresh user data after deleting
+      //Here better approach is to update the redux state instead of loading the complete data from API
+      //But for now I am using this but in most projects I prefer rather updating redux state
+      dispatch(getUsersData({}));
     })
     .catch((err) => {
       dispatch(setError(err?.error?.message));

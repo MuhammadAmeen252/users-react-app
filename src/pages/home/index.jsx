@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Table } from "../../components";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteUser, getUsersData } from "../../store/users/usersActions";
 import { setPage, setLimit } from "../../store/users/usersSlice";
-import { AddUser } from "../user/AddUser";
-import { UpdateUser } from "../user/UpdateUser";
+import { AddUser, UpdateUser, ViewUser } from "../index";
 
 export function Home() {
     const dispatch = useDispatch();
@@ -14,7 +13,8 @@ export function Home() {
     );
     const [isOpenAddUser, setisOpenAddUser] = useState(false);
     const [isOpenUpdateUser, setisOpenUpdateUser] = useState(false);
-    const [updateUserId, setUpdateUserId] = useState(null);
+    const [isOpenViewUser, setisOpenViewUser] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState(null);
 
     const handleOpenAdduserModal = () => {
         setisOpenAddUser(true);
@@ -25,7 +25,7 @@ export function Home() {
     }
 
     const handleOpenUpdateuserModal = (id) => {
-        setUpdateUserId(id);
+        setSelectedUserId(id);
         setisOpenUpdateUser(true);
     }
 
@@ -33,43 +33,50 @@ export function Home() {
         setisOpenUpdateUser(false);
     }
 
-    const loadingRef = useRef(null);
+    const handleOpenViewuserModal = (id) => {
+        setSelectedUserId(id);
+        setisOpenViewUser(true);
+    }
+
+    const handleCloseViewuserModal = () => {
+        setisOpenViewUser(false);
+    }
 
     useEffect(() => {
-        dispatch(getUsersData());
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [dispatch]);
-
-    const handleScroll = () => {
-        if (
-            window.innerHeight + window.scrollY >=
-            document.body.offsetHeight - 100
-        ) {
-            loadMoreData();
-        }
-    };
+        dispatch(getUsersData({ page: page, limit }));
+    }, [page]);
 
     const loadMoreData = () => {
-        if (!loading) {
             dispatch(setPage(page + 1));
-            dispatch(getUsersData({ page: page + 1, limit }));
-        }
     };
 
     const deleteUserById = (id) => {
         dispatch(deleteUser(id));
     }
 
+    //SO it doesn't re render on local state change
+    const memoizedTable = useMemo(() => (
+        <Table
+            cols={cols}
+            rows={data?.data || []}
+            onEdit={handleOpenUpdateuserModal}
+            onDelete={deleteUserById}
+            loadMore={loadMoreData}
+            hasMore={data?.isNextPage}
+            onView={handleOpenViewuserModal}
+        />
+    ), [data]);
+
     return (
         <div>
             <button onClick={handleOpenAdduserModal} className="bg-blue-500 text-white px-4 py-2">
-                Add User
+                + Add User
             </button>
-            <AddUser isOpen={isOpenAddUser} onClose={handleCloseAdduserModal}/>
-            <UpdateUser isOpen={isOpenUpdateUser} onClose={handleCloseUpdateuserModal} userId={updateUserId}/>
-            <Table cols={cols} rows={data?.data || []} onEdit={handleOpenUpdateuserModal} onDelete={deleteUserById}/>
-            {loading && <div ref={loadingRef}>Loading...</div>}
+            {isOpenAddUser && <AddUser isOpen={isOpenAddUser} onClose={handleCloseAdduserModal} />}
+            {isOpenUpdateUser && <UpdateUser isOpen={isOpenUpdateUser} onClose={handleCloseUpdateuserModal} userId={selectedUserId} />}
+            {isOpenViewUser && <ViewUser isOpen={isOpenViewUser} onClose={handleCloseViewuserModal} userId={selectedUserId} />}
+            {memoizedTable}
+            {loading && <div>Loading...</div>}
             {error && <div>Error: {error}</div>}
         </div>
     );

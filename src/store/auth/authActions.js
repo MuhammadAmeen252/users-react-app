@@ -34,3 +34,12 @@ export const loginUser = (payload, action) => async (dispatch) => {
       dispatch(setLoading(false));
     });
 };
+
+export const logoutUser = (payload, action) => async (dispatch) => {
+  action && action();
+  dispatch(setLoading(false));
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  dispatch(setLoading(false));
+  dispatch(resetAuthState());
+};

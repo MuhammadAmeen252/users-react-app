@@ -12,7 +12,6 @@ export const AddUser = (props) => {
   };
 
   const handleSubmit = (formData) => {
-    console.log(formData);
     dispatch(addUser(formData))
     closeModal(); 
   };

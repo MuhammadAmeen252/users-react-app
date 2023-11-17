@@ -3,7 +3,7 @@ import { Modal, UserForm } from '../../components'; // Import your Form componen
 import { useDispatch } from 'react-redux';
 import { getUser, updateUser } from '../../store/users/usersActions';
 
-export const UpdateUser = (props) => {
+export const ViewUser = (props) => {
   const {isOpen, onClose, userId} = props;
   const [user, setUser] = useState(null);
   const dispatch = useDispatch();
@@ -18,14 +18,13 @@ export const UpdateUser = (props) => {
   },[userId])
 
   const handleSubmit = (formData) => {
-    dispatch(updateUser(userId, formData));
     closeModal(); 
   };
 
   return (
     <div>
       <Modal isOpen={isOpen} onClose={closeModal}>
-        <UserForm onSubmit={handleSubmit} data={user}/>
+        <UserForm onSubmit={handleSubmit} data={user} isViewOnly={true}/>
       </Modal>
     </div>
   );

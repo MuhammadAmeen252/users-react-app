@@ -9,12 +9,12 @@ const ResponseInterceptor = (response) => {
 };
 
 const RequestInterceptor = (config) => {
-    let token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = "Bearer " + token;
-      config.headers.Accept = "application/json";
-    }
-    return config;
+  const token = JSON.parse(localStorage.getItem("token"));
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Accept = "application/json";
+  }
+  return config;
 };
 
 axiosInstance.interceptors.response.use(ResponseInterceptor, async (error) => {
